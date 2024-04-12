@@ -26,13 +26,17 @@ kotlin {
     )
 
     sourceSets {
+        commonMain {
+            dependencies {
+                implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.3")
+            }
+        }
         commonTest {
             dependencies {
                 implementation("io.kotest:kotest-framework-engine:5.8.1")
                 implementation("io.kotest:kotest-assertions-core:5.8.1")
                 implementation("io.kotest:kotest-framework-datatest:5.8.1")
                 implementation("com.squareup.okio:okio:3.9.0")
-                implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.3")
             }
         }
         jvmTest {
