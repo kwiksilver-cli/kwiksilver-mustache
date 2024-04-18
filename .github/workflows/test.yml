@@ -7,7 +7,16 @@ jobs:
   test:
     strategy:
       matrix:
-        os: [ macos-latest, macos-14, windows-latest, ubuntu-latest ]
+        os: [ macos-12, macos-14, windows-latest, ubuntu-latest ]
+        include:
+          - os: macos-12
+            TEST_TASK: jvmTest macosX64Test
+          - os: macos-14
+            TEST_TASK: jvmTest macosArm64Test
+          - os: windows-latest
+            TEST_TASK: jvmTest mingwX64Test
+          - os: ubuntu-latest
+            TEST_TASK: jvmTest linuxX64Test
     runs-on: ${{matrix.os}}
     steps:
       - uses: actions/checkout@v4
@@ -17,13 +26,13 @@ jobs:
           java-version: 17
       - uses: gradle/gradle-build-action@v2
         with:
-          arguments: check --stacktrace
+          arguments: ${{matrix.TEST_TASK}} --stacktrace
       - name: Bundle the build report
         if: failure()
-        run: find . -type d -name 'reports' | zip -@ -r build-reports.zip
+        run: find . -type d -name 'reports' | zip -@ -r build-reports-${{matrix.os}}.zip
       - name: Upload the build report
         if: failure()
         uses: actions/upload-artifact@master
         with:
           name: error-report
-          path: build-reports.zip
+          path: build-reports-${{matrix.os}}.zip
