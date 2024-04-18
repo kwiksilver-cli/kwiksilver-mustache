@@ -5,8 +5,8 @@ fun List<Fragment>.cleanStandaloneFragmentLines(): List<Fragment> {
     for (index in updatedFragments.indices) {
         val fragment = updatedFragments[index]
         if (fragment is CanStandAloneFragment) {
-            val precededByWhitespace = updatedFragments.endsWithWhitespaceAfterNewline(index - 1)
-            val followedByWhitespace = updatedFragments.startsWithWhitespaceBeforeNewline(index + 1)
+            val precededByWhitespace = this.endsWithWhitespaceAfterNewline(index - 1)
+            val followedByWhitespace = this.startsWithWhitespaceBeforeNewline(index + 1)
 
             if (precededByWhitespace && followedByWhitespace) {
                 updatedFragments.removeCharsAfterLastLinebreak(index - 1)
@@ -28,6 +28,11 @@ private fun List<Fragment>.endsWithWhitespaceAfterNewline(index: Int): Boolean {
     val textContent = (this[index] as TextFragment).text
     val lastLinebreakIndex = textContent.lastIndexOfAny(charArrayOf('\r', '\n'))
 
+    if (lastLinebreakIndex == -1 && index > 0) {
+        // There are more tags before this one on the same line
+        return false
+    }
+
     return textContent.substring(lastLinebreakIndex + 1).all { it.isWhitespace() }
 }
 
@@ -41,6 +46,10 @@ private fun List<Fragment>.startsWithWhitespaceBeforeNewline(index: Int): Boolea
     val textContent = (this[index] as TextFragment).text
     var firstLinebreakIndex = textContent.indexOfAny(charArrayOf('\r', '\n'))
     if (firstLinebreakIndex == -1) {
+        if (index < lastIndex) {
+            // There are more tags after this one on the same line
+            return false
+        }
         firstLinebreakIndex = textContent.length
     }
 
@@ -54,7 +63,9 @@ private fun MutableList<Fragment>.removeCharsAfterLastLinebreak(index: Int) {
     val textContent = (this[index] as TextFragment).text
     val lastLinebreakIndex = textContent.lastIndexOfAny(charArrayOf('\r', '\n'))
 
-    this[index] = TextFragment(textContent.substring(0, lastLinebreakIndex + 1))
+    if (lastLinebreakIndex != -1 || index == 0) {
+        this[index] = TextFragment(textContent.substring(0, lastLinebreakIndex + 1), this[index].position)
+    }
 }
 
 private fun MutableList<Fragment>.removeCharsUptoAndIncludingFirstLinebreak(index: Int) {
@@ -77,5 +88,6 @@ private fun MutableList<Fragment>.removeCharsUptoAndIncludingFirstLinebreak(inde
         }
     }
 
-    this[index] = TextFragment(textContent.substring(firstLinebreakIndex + linebreakSize))
+    val offset = firstLinebreakIndex + linebreakSize
+    this[index] = TextFragment(textContent.substring(offset), this[index].position + offset)
 }

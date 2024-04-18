@@ -45,7 +45,7 @@ class MustacheSpecTests : FunSpec({
     context("Mustache specification tests") {
         val specsDir = FileSystem.SYSTEM.canonicalize("mustache-specs".toPath())
         val testSuites = FileSystem.SYSTEM.list(specsDir)
-            .filter { it.name.endsWith(".json") }
+            .filter { it.name.endsWith(".json") && !it.name.startsWith('~') }
             .map { specPath ->
                 val specJson = FileSystem.SYSTEM.source(specPath).buffer().readUtf8()
                 val suite = jsonParser.decodeFromString<MustacheSuite>(specJson)
