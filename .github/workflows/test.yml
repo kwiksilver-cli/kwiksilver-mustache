@@ -1,0 +1,38 @@
+name: Test
+
+on:
+  push:
+
+jobs:
+  test:
+    strategy:
+      matrix:
+        os: [ macos-12, macos-14, windows-latest, ubuntu-latest ]
+        include:
+          - os: macos-12
+            TEST_TASK: macosX64Test
+          - os: macos-14
+            TEST_TASK: macosArm64Test
+          - os: windows-latest
+            TEST_TASK: mingwX64Test
+          - os: ubuntu-latest
+            TEST_TASK: jvmTest linuxX64Test
+    runs-on: ${{matrix.os}}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: 'zulu'
+          java-version: 17
+      - uses: gradle/gradle-build-action@v3
+        with:
+          arguments: ${{matrix.TEST_TASK}}
+      - name: Bundle the build report
+        if: failure()
+        run: find . -type d -name 'reports' | zip -@ -r build-reports-${{matrix.os}}.zip
+      - name: Upload the build report
+        if: failure()
+        uses: actions/upload-artifact@master
+        with:
+          name: error-report-${{matrix.os}}
+          path: build-reports-${{matrix.os}}.zip
