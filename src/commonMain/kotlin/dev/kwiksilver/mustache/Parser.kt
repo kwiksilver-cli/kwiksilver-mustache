@@ -56,6 +56,7 @@ fun buildActionFragment(actionText: String, position: Int): Fragment {
         actionText.startsWith('/') -> SectionEndFragment(parseValuePath(actionText.substring(1)), position)
         actionText.startsWith('^') -> InvertedSectionStartFragment(parseValuePath(actionText.substring(1)), position)
         actionText.startsWith('&') -> InterpolationFragment(parseValuePath(actionText.substring(1)), position)
+        actionText.startsWith('>') -> PartialFragment(actionText.substring(1).trim(), "", position)
         else -> InterpolationFragment(parseValuePath(actionText), position, escapeHtml = true)
     }
 }

@@ -9,8 +9,12 @@ fun List<Fragment>.cleanStandaloneFragmentLines(): List<Fragment> {
             val followedByWhitespace = this.startsWithWhitespaceBeforeNewline(index + 1)
 
             if (precededByWhitespace && followedByWhitespace) {
-                updatedFragments.removeCharsAfterLastLinebreak(index - 1)
+                val strippedIndent = updatedFragments.removeCharsAfterLastLinebreak(index - 1)
                 updatedFragments.removeCharsUptoAndIncludingFirstLinebreak(index + 1)
+
+                if (fragment is PartialFragment) {
+                    updatedFragments[index] = PartialFragment(fragment.name, strippedIndent, fragment.position)
+                }
             }
         }
     }
@@ -56,16 +60,19 @@ private fun List<Fragment>.startsWithWhitespaceBeforeNewline(index: Int): Boolea
     return textContent.substring(0, firstLinebreakIndex).all { it.isWhitespace() }
 }
 
-private fun MutableList<Fragment>.removeCharsAfterLastLinebreak(index: Int) {
+private fun MutableList<Fragment>.removeCharsAfterLastLinebreak(index: Int): String {
     if (!indices.contains(index)) {
-        return
+        return ""
     }
     val textContent = (this[index] as TextFragment).text
     val lastLinebreakIndex = textContent.lastIndexOfAny(charArrayOf('\r', '\n'))
 
     if (lastLinebreakIndex != -1 || index == 0) {
         this[index] = TextFragment(textContent.substring(0, lastLinebreakIndex + 1), this[index].position)
+        return textContent.substring(lastLinebreakIndex + 1)
     }
+
+    return ""
 }
 
 private fun MutableList<Fragment>.removeCharsUptoAndIncludingFirstLinebreak(index: Int) {

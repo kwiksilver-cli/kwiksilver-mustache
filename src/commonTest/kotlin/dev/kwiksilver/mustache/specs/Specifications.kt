@@ -54,7 +54,7 @@ class MustacheSpecTests : FunSpec({
 
         withData(testSuites) { testSuite ->
             withData(testSuite.tests) { specTest ->
-                Mustache.process(specTest.template, specTest.data) shouldBe specTest.expected
+                Mustache.process(specTest.template, specTest.data, specTest.partials) shouldBe specTest.expected
             }
         }
     }

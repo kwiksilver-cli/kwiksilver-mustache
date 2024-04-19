@@ -4,14 +4,14 @@ import kotlinx.serialization.json.*
 
 
 class Template(val fragments: List<Fragment>) {
-    fun render(context: Context): String {
-        return fragments.joinToString(separator = "") { it.render(context) }
+    fun render(context: Context, partials: Map<String, Template>): String {
+        return fragments.joinToString(separator = "") { it.render(context, partials) }
     }
 }
 
 
 sealed interface Fragment {
-    fun render(context: Context) : String
+    fun render(context: Context, partials: Map<String, Template>) : String
     val position: Int
 }
 
@@ -19,11 +19,11 @@ interface CanStandAloneFragment: Fragment
 
 
 abstract class EmptyFragment(override val position: Int) : Fragment {
-    override fun render(context: Context): String = ""
+    override fun render(context: Context, partials: Map<String, Template>): String = ""
 }
 
 class TextFragment(val text: String, override val position: Int) : Fragment {
-    override fun render(context: Context): String = text
+    override fun render(context: Context, partials: Map<String, Template>): String = text
 }
 
 class CommentFragment(position: Int) : EmptyFragment(position), CanStandAloneFragment
@@ -44,7 +44,7 @@ class DelimiterChangeFragment(val openDelimiter: String, val closeDelimiter: Str
 class ErrorFragment(val message: String, position: Int) : EmptyFragment(position)
 
 class InterpolationFragment(private val valuePath: ValuePath, override val position: Int, private val escapeHtml: Boolean = false) : Fragment {
-    override fun render(context: Context): String = context.resolvePath(valuePath).renderValue()
+    override fun render(context: Context, partials: Map<String, Template>): String = context.resolvePath(valuePath).renderValue()
 
     private fun JsonElement?.renderValue(): String = when (this) {
         is JsonNull -> ""
@@ -65,7 +65,7 @@ class InterpolationFragment(private val valuePath: ValuePath, override val posit
 class SectionStartFragment(val valuePath: ValuePath, position: Int) : EmptyFragment(position), CanStandAloneFragment
 class SectionEndFragment(val valuePath: ValuePath, position: Int) : EmptyFragment(position), CanStandAloneFragment
 class SectionFragment(private val valuePath: ValuePath, private val contents: List<Fragment>, override val position: Int) : CanStandAloneFragment {
-    override fun render(context: Context): String {
+    override fun render(context: Context, partials: Map<String, Template>): String {
         val targetValue = context.resolvePath(valuePath)
 
         if (!isTruthy(targetValue)) {
@@ -81,7 +81,7 @@ class SectionFragment(private val valuePath: ValuePath, private val contents: Li
         return buildString {
             for (targetElement in targetArray) {
                 val nestedContext = Context(targetElement, context)
-                append(contents.joinToString(separator = "") { it.render(nestedContext) })
+                append(contents.joinToString(separator = "") { it.render(nestedContext, partials) })
             }
         }
     }
@@ -89,15 +89,20 @@ class SectionFragment(private val valuePath: ValuePath, private val contents: Li
 
 class InvertedSectionStartFragment(val valuePath: ValuePath, position: Int) : EmptyFragment(position), CanStandAloneFragment
 class InvertedSectionFragment(private val valuePath: ValuePath, private val contents: List<Fragment>, override val position: Int) : CanStandAloneFragment {
-    override fun render(context: Context): String {
+    override fun render(context: Context, partials: Map<String, Template>): String {
         val targetValue = context.resolvePath(valuePath)
 
         if (isTruthy(targetValue)) {
             return ""
         }
 
-        return contents.joinToString(separator = "") { it.render(context) }
+        return contents.joinToString(separator = "") { it.render(context, partials) }
     }
+}
+
+class PartialFragment(val name: String, private val indentation: String, override val position: Int) : CanStandAloneFragment {
+    override fun render(context: Context, partials: Map<String, Template>): String =
+        partials[name]?.render(context.withAddedIndentation(indentation), partials) ?: ""
 }
 
 private fun isTruthy(targetValue: JsonElement) = !(

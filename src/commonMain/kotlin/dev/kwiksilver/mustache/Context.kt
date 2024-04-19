@@ -7,10 +7,12 @@ import kotlinx.serialization.json.JsonObject
 class Context private constructor(
     private val parent: Context?,
     private val current: JsonElement,
+    val indentation: String,
 ) {
     constructor(contextValue: JsonElement?, parent: Context? = null) : this(
         parent,
         contextValue ?: JsonNull,
+        parent?.indentation ?: "",
     )
 
     fun resolvePath(path: ValuePath): JsonElement {
@@ -30,6 +32,10 @@ class Context private constructor(
             return nextObject?.resolvePath(path.drop(1), JsonNull) ?: notFoundValue
         }
         return notFoundValue
+    }
+
+    fun withAddedIndentation(indentation: String): Context {
+        return Context(parent, current, this.indentation + indentation)
     }
 
 }
