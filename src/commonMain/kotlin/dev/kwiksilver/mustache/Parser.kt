@@ -7,25 +7,30 @@ fun parseTemplate(template: String): Template {
 
     val fragments = mutableListOf<Fragment>()
 
+    val lineStartIndices = template.findAllLineStartIndices()
+
     while (position < template.length) {
         val openPos = template.indexOf(openDelimiter, position)
         val tripleOpenPos = template.indexOf("{{{", position)
 
-        if (tripleOpenPos != -1 && tripleOpenPos <= openPos) {
+        if (tripleOpenPos != -1 && tripleOpenPos <= openPos && openPos != -1) {
             if (tripleOpenPos > position) {
-                fragments.add(TextFragment(template.substring(position, tripleOpenPos), position))
+                val fragmentLineStarts = lineStartIndices.filter { it in position..tripleOpenPos }.map { it - position }
+                fragments.add(TextFragment(template.substring(position, tripleOpenPos), fragmentLineStarts, position))
             }
             position = parseTripleMustache(template, tripleOpenPos, fragments)
             continue
         }
 
         if (openPos == -1) {
-            fragments.add(TextFragment(template.substring(position), position))
+            val fragmentLineStarts = lineStartIndices.filter { it in position..template.length }.map { it - position }
+            fragments.add(TextFragment(template.substring(position), fragmentLineStarts, position))
             break
         }
 
         if (openPos > position) {
-            fragments.add(TextFragment(template.substring(position, openPos), position))
+            val fragmentLineStarts = lineStartIndices.filter { it in position..openPos }.map { it - position }
+            fragments.add(TextFragment(template.substring(position, openPos), fragmentLineStarts, position))
         }
 
         val closePos = template.indexOf(closeDelimiter, openPos + openDelimiter.length)
@@ -48,7 +53,7 @@ fun parseTemplate(template: String): Template {
     return Template(fragments.cleanStandaloneFragmentLines().constructSections())
 }
 
-fun buildActionFragment(actionText: String, position: Int): Fragment {
+private fun buildActionFragment(actionText: String, position: Int): Fragment {
     return when {
         actionText.startsWith('!') -> CommentFragment(position)
         actionText.startsWith('=') -> DelimiterChangeFragment(actionText, position)
@@ -74,4 +79,27 @@ private fun parseTripleMustache(template: String, tripleOpenPos: Int, fragments:
     fragments.add(InterpolationFragment(parseValuePath(template.substring(tripleOpenPos + 3, tripleClosePos)), tripleOpenPos))
 
     return tripleClosePos + 3
+}
+
+internal fun CharSequence.findAllLineStartIndices(): List<Int> {
+    val lineStarts = mutableListOf<Int>()
+
+    val lineBreakChars = charArrayOf('\n', '\r')
+    var position = 0
+
+    while (position < length) {
+        lineStarts.add(position)
+        val nextBreak = indexOfAny(lineBreakChars, position)
+        if (nextBreak == -1) {
+            break
+        }
+
+        position = if (this[nextBreak] == '\r' && this[nextBreak + 1] == '\n') {
+            nextBreak + 2
+        } else {
+            nextBreak + 1
+        }
+    }
+
+    return lineStarts
 }

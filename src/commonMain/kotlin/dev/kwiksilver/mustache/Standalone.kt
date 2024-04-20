@@ -64,11 +64,16 @@ private fun MutableList<Fragment>.removeCharsAfterLastLinebreak(index: Int): Str
     if (!indices.contains(index)) {
         return ""
     }
-    val textContent = (this[index] as TextFragment).text
+    val textFragment = this[index] as TextFragment
+    val textContent = textFragment.text
     val lastLinebreakIndex = textContent.lastIndexOfAny(charArrayOf('\r', '\n'))
 
     if (lastLinebreakIndex != -1 || index == 0) {
-        this[index] = TextFragment(textContent.substring(0, lastLinebreakIndex + 1), this[index].position)
+        this[index] = TextFragment(
+            textContent.substring(0, lastLinebreakIndex + 1),
+            textFragment.lineStartPositions,
+            textFragment.position
+        )
         return textContent.substring(lastLinebreakIndex + 1)
     }
 
@@ -79,7 +84,8 @@ private fun MutableList<Fragment>.removeCharsUptoAndIncludingFirstLinebreak(inde
     if (!indices.contains(index)) {
         return
     }
-    val textContent = (this[index] as TextFragment).text
+    val textFragment = this[index] as TextFragment
+    val textContent = textFragment.text
     var firstLinebreakIndex = textContent.indexOfAny(charArrayOf('\r', '\n'))
     val linebreakSize: Int
     if (firstLinebreakIndex == -1) {
@@ -88,7 +94,8 @@ private fun MutableList<Fragment>.removeCharsUptoAndIncludingFirstLinebreak(inde
     } else {
         linebreakSize = if (textContent[firstLinebreakIndex] == '\r'
             && firstLinebreakIndex + 1 < textContent.length
-            && textContent[firstLinebreakIndex + 1] == '\n') {
+            && textContent[firstLinebreakIndex + 1] == '\n'
+        ) {
             2
         } else {
             1
@@ -96,5 +103,6 @@ private fun MutableList<Fragment>.removeCharsUptoAndIncludingFirstLinebreak(inde
     }
 
     val offset = firstLinebreakIndex + linebreakSize
-    this[index] = TextFragment(textContent.substring(offset), this[index].position + offset)
+    this[index] =
+        TextFragment(textContent.substring(offset), textFragment.lineStartPositions, textFragment.position + offset)
 }

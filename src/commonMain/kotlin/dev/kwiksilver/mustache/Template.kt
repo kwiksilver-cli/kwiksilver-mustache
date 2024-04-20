@@ -22,8 +22,22 @@ abstract class EmptyFragment(override val position: Int) : Fragment {
     override fun render(context: Context, partials: Map<String, Template>): String = ""
 }
 
-class TextFragment(val text: String, override val position: Int) : Fragment {
-    override fun render(context: Context, partials: Map<String, Template>): String = text
+class TextFragment(val text: String, val lineStartPositions: List<Int>, override val position: Int) : Fragment {
+    override fun render(context: Context, partials: Map<String, Template>): String {
+        if (context.indentation.isEmpty() || lineStartPositions.isEmpty()) {
+            return text
+        }
+
+        return buildString {
+            var textPosition = 0
+            lineStartPositions.forEach { lineStartPosition ->
+                append(text.substring(textPosition, lineStartPosition))
+                append(context.indentation)
+                textPosition = lineStartPosition
+            }
+            append(text.substring(textPosition))
+        }
+    }
 }
 
 class CommentFragment(position: Int) : EmptyFragment(position), CanStandAloneFragment
