@@ -1,6 +1,7 @@
 package dev.kwiksilver.mustache.specs
 
 import dev.kwiksilver.mustache.Mustache
+import io.kotest.assertions.withClue
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.datatest.IsStableType
 import io.kotest.datatest.withData
@@ -23,7 +24,7 @@ data class MustacheSpec(
     val template: String,
     val expected: String,
 ) {
-    override fun toString(): String = "$name: $desc"
+    override fun toString(): String = name
 }
 
 @Serializable
@@ -49,12 +50,14 @@ class MustacheSpecTests : FunSpec({
             .map { specPath ->
                 val specJson = FileSystem.SYSTEM.source(specPath).buffer().readUtf8()
                 val suite = jsonParser.decodeFromString<MustacheSuite>(specJson)
-                suite.copy(name = specPath.name)
+                suite.copy(name = specPath.name.removeSuffix(".json"))
             }
 
         withData(testSuites) { testSuite ->
             withData(testSuite.tests) { specTest ->
-                Mustache.process(specTest.template, specTest.data, specTest.partials) shouldBe specTest.expected
+                withClue(specTest.desc) {
+                    Mustache.process(specTest.template, specTest.data, specTest.partials) shouldBe specTest.expected
+                }
             }
         }
     }
