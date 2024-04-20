@@ -24,9 +24,9 @@ jobs:
         with:
           distribution: 'zulu'
           java-version: 17
-      - uses: gradle/gradle-build-action@v3
-        with:
-          arguments: ${{matrix.TEST_TASK}}
+      - uses: gradle/actions/setup-gradle@v3
+      - name: Run tests
+        run: ./gradlew ${{matrix.TEST_TASK}}
       - name: Bundle the build report
         if: failure()
         run: find . -type d -name 'reports' | zip -@ -r build-reports-${{matrix.os}}.zip
