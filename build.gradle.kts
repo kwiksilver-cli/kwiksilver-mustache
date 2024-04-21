@@ -5,10 +5,11 @@ plugins {
     kotlin("multiplatform") version "1.9.23"
     kotlin("plugin.serialization") version "1.9.23"
     id("io.kotest.multiplatform") version "5.8.1"
+    id("maven-publish")
 }
 
-group = "me.user"
-version = "1.0-SNAPSHOT"
+group = "dev.kwiksilver"
+version = "0.1"
 
 repositories {
     mavenCentral()
@@ -54,5 +55,18 @@ tasks.withType<Test>().configureEach {
 tasks.withType<KotlinJvmCompile>().configureEach {
     compilerOptions {
         jvmTarget.set(JvmTarget.JVM_17)
+    }
+}
+
+publishing {
+    repositories {
+        maven {
+            name = "GitHubPackages"
+            setUrl("https://maven.pkg.github.com/kwiksilver-cli/kwiksilver-mustache")
+            credentials {
+                username = System.getenv("GITHUB_ACTOR")
+                password = System.getenv("GITHUB_TOKEN")
+            }
+        }
     }
 }
