@@ -26,6 +26,7 @@ tests:
         lisp:    '(lambda () "world")'
         pwsh:    '"world"'
         go:      'func() string { return "world" }'
+        erlang:  'fun() -> "world" end.'
     template: "Hello, {{lambda}}!"
     expected: "Hello, world!"
 
@@ -44,6 +45,7 @@ tests:
         lisp:    '(lambda () "{{planet}}")'
         pwsh:    '"{{planet}}"'
         go:      'func() string { return "{{planet}}" }'
+        erlang:  'fun() -> "{{planet}}" end.'
     template: "Hello, {{lambda}}!"
     expected: "Hello, world!"
 
@@ -62,6 +64,7 @@ tests:
         lisp:    '(lambda () "|planet| => {{planet}}")'
         pwsh:    '"|planet| => {{planet}}"'
         go:      'func() string { return "|planet| => {{planet}}" }'
+        erlang:  'fun() -> "|planet| => {{planet}}" end.'
     template: "{{= | | =}}\nHello, (|&lambda|)!"
     expected: "Hello, (|planet| => world)!"
 
@@ -79,6 +82,7 @@ tests:
         lisp:    '(let ((g 0)) (lambda () (incf g)))'
         pwsh:    'if (($null -eq $script:calls) -or ($script:calls -ge 3)){$script:calls=0}; ++$script:calls; $script:calls'
         go:      'func() func() int { g := 0; return func() int { g++; return g } }()'
+        erlang:  'fun() -> G=case get(g) of undefined -> 1; _G -> _G end, put(g, G+1), G end.'
     template: '{{lambda}} == {{{lambda}}} == {{lambda}}'
     expected: '1 == 2 == 3'
 
@@ -96,6 +100,7 @@ tests:
         lisp:    '(lambda () ">")'
         pwsh:    '">"'
         go:      'func() string { return ">" }'
+        erlang:  'fun() -> ">" end.'
     template: "<{{lambda}}{{{lambda}}}"
     expected: "<&gt;>"
 
@@ -114,6 +119,7 @@ tests:
         lisp:    '(lambda (text) (if (string= text "{{x}}") "yes" "no"))'
         pwsh:    'if ($args[0] -eq "{{x}}") {"yes"} else {"no"}'
         go:      'func(text string) string { if text == "{{x}}" { return "yes" } else { return "no" } }'
+        erlang:  'fun("{{x}}") -> "yes"; (_) -> "no" end.'
     template: "<{{#lambda}}{{x}}{{/lambda}}>"
     expected: "<yes>"
 
@@ -132,6 +138,7 @@ tests:
         lisp:    '(lambda (text) (format nil "~a{{planet}}~a" text text))'
         pwsh:    '"$($args[0]){{planet}}$($args[0])"'
         go:      'func(text string) string { return text + "{{planet}}" + text }'
+        erlang:  'fun(Text) -> Text ++ "{{planet}}" ++ Text end.'
     template: "<{{#lambda}}-{{/lambda}}>"
     expected: "<-Earth->"
 
@@ -150,6 +157,7 @@ tests:
         lisp:    '(lambda (text) (format nil "~a{{planet}} => |planet|~a" text text))'
         pwsh:    '"$($args[0]){{planet}} => |planet|$($args[0])"'
         go:      'func(text string) string { return text + "{{planet}} => |planet|" + text }'
+        erlang:  'fun(Text) -> Text ++ "{{planet}} => |planet|" ++ Text end.'
     template: "{{= | | =}}<|#lambda|-|/lambda|>"
     expected: "<-{{planet}} => Earth->"
 
@@ -167,6 +175,7 @@ tests:
         lisp:    '(lambda (text) (format nil "__~a__" text))'
         pwsh:    '"__$($args[0])__"'
         go:      'func(text string) string { return "__" + text + "__" }'
+        erlang:  'fun(Text) -> "__" ++ Text ++ "__" end.'
     template: '{{#lambda}}FILE{{/lambda}} != {{#lambda}}LINE{{/lambda}}'
     expected: '__FILE__ != __LINE__'
 
@@ -185,5 +194,6 @@ tests:
         lisp:    '(lambda (text) (declare (ignore text)) nil)'
         pwsh:    '$false'
         go:      'func(text string) bool { return false }'
+        erlang:  'fun(_) -> false end.'
     template: "<{{^lambda}}{{static}}{{/lambda}}>"
     expected: "<>"

@@ -20,6 +20,16 @@
       "expected": "Hello, world!\n"
     },
     {
+      "name": "No Re-interpolation",
+      "desc": "Interpolated tag output should not be re-interpolated.",
+      "data": {
+        "template": "{{planet}}",
+        "planet": "Earth"
+      },
+      "template": "{{template}}: {{planet}}",
+      "expected": "{{planet}}: Earth"
+    },
+    {
       "name": "HTML Escaping",
       "desc": "Basic interpolation should be HTML escaped.",
       "data": {
@@ -270,6 +280,27 @@
       },
       "template": "{{#a}}{{b.c}}{{/a}}",
       "expected": ""
+    },
+    {
+      "name": "Dotted Names are never single keys",
+      "desc": "Dotted names shall not be parsed as single, atomic keys",
+      "data": {
+        "a.b": "c"
+      },
+      "template": "{{a.b}}",
+      "expected": ""
+    },
+    {
+      "name": "Dotted Names - No Masking",
+      "desc": "Dotted Names in a given context are unvavailable due to dot splitting",
+      "data": {
+        "a.b": "c",
+        "a": {
+          "b": "d"
+        }
+      },
+      "template": "{{a.b}}",
+      "expected": "d"
     },
     {
       "name": "Implicit Iterators - Basic Interpolation",
