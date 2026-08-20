@@ -3,8 +3,9 @@ package dev.kwiksilver.mustache.specs
 import dev.kwiksilver.mustache.Mustache
 import io.kotest.assertions.withClue
 import io.kotest.core.spec.style.FunSpec
-import io.kotest.datatest.IsStableType
-import io.kotest.datatest.withData
+import io.kotest.datatest.withContexts
+import io.kotest.datatest.withTests
+import io.kotest.engine.stable.IsStableType
 import io.kotest.matchers.shouldBe
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.*
@@ -53,8 +54,8 @@ class MustacheSpecTests : FunSpec({
                 suite.copy(name = specPath.name.removeSuffix(".json"))
             }
 
-        withData(testSuites) { testSuite ->
-            withData(testSuite.tests) { specTest ->
+        withContexts(testSuites) { testSuite ->
+            withTests(testSuite.tests) { specTest ->
                 withClue(specTest.desc) {
                     Mustache.process(specTest.template, specTest.data, specTest.partials) shouldBe specTest.expected
                 }
