@@ -1,5 +1,8 @@
-package dev.kwiksilver.mustache
+package dev.kwiksilver
 
+import dev.kwiksilver.mustache.Context
+import dev.kwiksilver.mustache.Template
+import dev.kwiksilver.mustache.parseTemplate
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonElement
@@ -38,5 +41,3 @@ object Mustache {
 
     fun parse(templateText: String): Template = parseTemplate(templateText)
 }
-
-

@@ -1,6 +1,6 @@
 package dev.kwiksilver.mustache
 
-fun List<Fragment>.cleanStandaloneFragmentLines(): List<Fragment> {
+internal fun List<Fragment>.cleanStandaloneFragmentLines(): List<Fragment> {
     val updatedFragments = this.toMutableList()
     for (index in updatedFragments.indices) {
         val fragment = updatedFragments[index]

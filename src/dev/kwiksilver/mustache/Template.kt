@@ -3,26 +3,26 @@ package dev.kwiksilver.mustache
 import kotlinx.serialization.json.*
 
 
-class Template(val fragments: List<Fragment>) {
-    fun render(context: Context, partials: Map<String, Template>): String {
+class Template internal constructor(private val fragments: List<Fragment>) {
+    internal fun render(context: Context, partials: Map<String, Template>): String {
         return fragments.joinToString(separator = "") { it.render(context, partials) }
     }
 }
 
 
-sealed interface Fragment {
+internal sealed interface Fragment {
     fun render(context: Context, partials: Map<String, Template>) : String
     val position: Int
 }
 
-interface CanStandAloneFragment: Fragment
+internal interface CanStandAloneFragment: Fragment
 
 
-abstract class EmptyFragment(override val position: Int) : Fragment {
+internal abstract class EmptyFragment(override val position: Int) : Fragment {
     override fun render(context: Context, partials: Map<String, Template>): String = ""
 }
 
-class TextFragment(val text: String, val lineStartPositions: List<Int>, override val position: Int) : Fragment {
+internal class TextFragment(val text: String, val lineStartPositions: List<Int>, override val position: Int) : Fragment {
     override fun render(context: Context, partials: Map<String, Template>): String {
         if (context.indentation.isEmpty() || lineStartPositions.isEmpty()) {
             return text
@@ -40,9 +40,9 @@ class TextFragment(val text: String, val lineStartPositions: List<Int>, override
     }
 }
 
-class CommentFragment(position: Int) : EmptyFragment(position), CanStandAloneFragment
+internal class CommentFragment(position: Int) : EmptyFragment(position), CanStandAloneFragment
 
-class DelimiterChangeFragment(val openDelimiter: String, val closeDelimiter: String, position: Int) : EmptyFragment(position), CanStandAloneFragment {
+internal class DelimiterChangeFragment(val openDelimiter: String, val closeDelimiter: String, position: Int) : EmptyFragment(position), CanStandAloneFragment {
     companion object {
         operator fun invoke(actionText: String, position: Int): DelimiterChangeFragment {
             require(actionText.startsWith('=')) { "Delimiter set action must start with '='" }
@@ -55,9 +55,9 @@ class DelimiterChangeFragment(val openDelimiter: String, val closeDelimiter: Str
     }
 }
 
-class ErrorFragment(val message: String, position: Int) : EmptyFragment(position)
+internal class ErrorFragment(val message: String, position: Int) : EmptyFragment(position)
 
-class InterpolationFragment(private val valuePath: ValuePath, override val position: Int, private val escapeHtml: Boolean = false) : Fragment {
+internal class InterpolationFragment(private val valuePath: ValuePath, override val position: Int, private val escapeHtml: Boolean = false) : Fragment {
     override fun render(context: Context, partials: Map<String, Template>): String = context.resolvePath(valuePath).renderValue()
 
     private fun JsonElement?.renderValue(): String = when (this) {
@@ -76,9 +76,9 @@ class InterpolationFragment(private val valuePath: ValuePath, override val posit
     }
 }
 
-class SectionStartFragment(val valuePath: ValuePath, position: Int) : EmptyFragment(position), CanStandAloneFragment
-class SectionEndFragment(val valuePath: ValuePath, position: Int) : EmptyFragment(position), CanStandAloneFragment
-class SectionFragment(private val valuePath: ValuePath, private val contents: List<Fragment>, override val position: Int) : CanStandAloneFragment {
+internal class SectionStartFragment(val valuePath: ValuePath, position: Int) : EmptyFragment(position), CanStandAloneFragment
+internal class SectionEndFragment(val valuePath: ValuePath, position: Int) : EmptyFragment(position), CanStandAloneFragment
+internal class SectionFragment internal constructor(private val valuePath: ValuePath, private val contents: List<Fragment>, override val position: Int) : CanStandAloneFragment {
     override fun render(context: Context, partials: Map<String, Template>): String {
         val targetValue = context.resolvePath(valuePath)
 
@@ -101,8 +101,8 @@ class SectionFragment(private val valuePath: ValuePath, private val contents: Li
     }
 }
 
-class InvertedSectionStartFragment(val valuePath: ValuePath, position: Int) : EmptyFragment(position), CanStandAloneFragment
-class InvertedSectionFragment(private val valuePath: ValuePath, private val contents: List<Fragment>, override val position: Int) : CanStandAloneFragment {
+internal class InvertedSectionStartFragment(val valuePath: ValuePath, position: Int) : EmptyFragment(position), CanStandAloneFragment
+internal class InvertedSectionFragment internal constructor(private val valuePath: ValuePath, private val contents: List<Fragment>, override val position: Int) : CanStandAloneFragment {
     override fun render(context: Context, partials: Map<String, Template>): String {
         val targetValue = context.resolvePath(valuePath)
 
@@ -114,7 +114,7 @@ class InvertedSectionFragment(private val valuePath: ValuePath, private val cont
     }
 }
 
-class PartialFragment(val name: String, private val indentation: String, override val position: Int) : CanStandAloneFragment {
+internal class PartialFragment(val name: String, private val indentation: String, override val position: Int) : CanStandAloneFragment {
     override fun render(context: Context, partials: Map<String, Template>): String =
         partials[name]?.render(context.withAddedIndentation(indentation), partials) ?: ""
 }

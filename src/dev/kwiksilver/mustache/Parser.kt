@@ -1,6 +1,6 @@
 package dev.kwiksilver.mustache
 
-fun parseTemplate(template: String): Template {
+internal fun parseTemplate(template: String): Template {
     var openDelimiter = "{{"
     var closeDelimiter = "}}"
     var position = 0
@@ -81,7 +81,7 @@ private fun parseTripleMustache(template: String, tripleOpenPos: Int, fragments:
     return tripleClosePos + 3
 }
 
-fun CharSequence.findAllLineStartIndices(): List<Int> {
+internal fun CharSequence.findAllLineStartIndices(): List<Int> {
     val lineStarts = mutableListOf<Int>()
 
     val lineBreakChars = charArrayOf('\n', '\r')
