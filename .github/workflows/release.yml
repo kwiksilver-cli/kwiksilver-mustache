@@ -16,11 +16,14 @@ jobs:
       - uses: actions/setup-java@b6effb05e454b25005698d916606bdc6ffcbf961 # v5.7.0
         with:
           distribution: 'zulu'
-          java-version: 17
-      - uses: gradle/actions/setup-gradle@9c971963bec38e04b3d30dcc455b5382be2fdbfb # v6.3.0
+          java-version: 21
+      - name: Install Kotlin Toolchain
+        run: curl -fsSL https://kotl.in/install.sh | sh
       - name: Run tests
-        run: ./gradlew check
+        run: kotlin test --platform jvm
       - name: Publish package
-        run: ./gradlew publish
+        run: |
+          printf 'username=github-actions\npassword=%s\n' "$GITHUB_TOKEN" > creds.properties
+          kotlin publish github
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
