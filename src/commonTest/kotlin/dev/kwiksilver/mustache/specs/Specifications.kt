@@ -1,6 +1,6 @@
 package dev.kwiksilver.mustache.specs
 
-import dev.kwiksilver.mustache.Mustache
+import dev.kwiksilver.Mustache
 import io.kotest.assertions.withClue
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.datatest.withContexts

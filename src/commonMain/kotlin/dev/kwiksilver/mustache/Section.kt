@@ -1,6 +1,6 @@
 package dev.kwiksilver.mustache
 
-fun List<Fragment>.constructSections(): List<Fragment> {
+internal fun List<Fragment>.constructSections(): List<Fragment> {
     val updatedFragments = mutableListOf<Fragment>()
     val sectionStack = mutableListOf<SectionBuilder>()
 

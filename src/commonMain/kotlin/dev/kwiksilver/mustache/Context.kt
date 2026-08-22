@@ -4,7 +4,7 @@ import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonNull
 import kotlinx.serialization.json.JsonObject
 
-class Context private constructor(
+internal class Context private constructor(
     private val parent: Context?,
     private val current: JsonElement,
     val indentation: String,
@@ -40,5 +40,5 @@ class Context private constructor(
 
 }
 
-typealias ValuePath = List<String>
+internal typealias ValuePath = List<String>
 

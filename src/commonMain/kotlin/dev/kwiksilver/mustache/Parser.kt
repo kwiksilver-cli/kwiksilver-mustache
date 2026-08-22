@@ -1,6 +1,6 @@
 package dev.kwiksilver.mustache
 
-fun parseTemplate(template: String): Template {
+internal fun parseTemplate(template: String): Template {
     var openDelimiter = "{{"
     var closeDelimiter = "}}"
     var position = 0
