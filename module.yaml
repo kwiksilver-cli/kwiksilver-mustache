@@ -33,10 +33,10 @@ settings:
 repositories:
   - id: mavenCentral
     url: https://repo.maven.apache.org/maven2
-  - id: github
-    url: https://maven.pkg.github.com/kwiksilver-cli/kwiksilver-mustache
-    publish: true
-    credentials:
-      file: creds.properties
-      usernameKey: username
-      passwordKey: password
+#  - id: github
+#    url: https://maven.pkg.github.com/kwiksilver-cli/kwiksilver-mustache
+#    publish: true
+#    credentials:
+#      file: creds.properties
+#      usernameKey: username
+#      passwordKey: password
