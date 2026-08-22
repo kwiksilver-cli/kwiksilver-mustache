@@ -13,6 +13,9 @@ test-dependencies:
 test-dependencies@jvm:
   - io.kotest:kotest-runner-junit5:6.2.4
 
+test-dependencies@android:
+  - io.kotest:kotest-runner-junit5:6.2.4
+
 settings:
   android:
     namespace: dev.kwiksilver.mustache
