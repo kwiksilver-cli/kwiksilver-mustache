@@ -3,10 +3,13 @@ package dev.kwiksilver.mustache
 import kotlinx.serialization.json.*
 
 
-class Template internal constructor(private val fragments: List<Fragment>) {
+class Template internal constructor(internal val fragments: List<Fragment>) {
     internal fun render(context: Context, partials: Map<String, Template>): String {
         return fragments.joinToString(separator = "") { it.render(context, partials) }
     }
+
+    fun hasErrors(): Boolean =
+        fragments.find { it is ErrorFragment } != null
 }
 
 

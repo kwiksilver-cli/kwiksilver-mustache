@@ -2,6 +2,7 @@ package dev.kwiksilver
 
 import dev.kwiksilver.mustache.Context
 import dev.kwiksilver.mustache.Template
+import dev.kwiksilver.mustache.generateErrors
 import dev.kwiksilver.mustache.parseTemplate
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
@@ -40,4 +41,9 @@ object Mustache {
     }
 
     fun parse(templateText: String): Template = parseTemplate(templateText)
+
+    fun parseWithErrorReport(templateText: String): Pair<Template, List<String>> {
+        val template = parseTemplate(templateText)
+        return Pair(template, template.generateErrors(templateText))
+    }
 }
