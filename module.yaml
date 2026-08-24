@@ -33,6 +33,12 @@ settings:
     group: dev.kwiksilver
     version: 0.2
 
+test-settings:
+  kotlin:
+    ksp:
+      processors:
+        - io.kotest:kotest-framework-symbol-processor:6.2.4
+
 repositories:
   - id: mavenCentral
     url: https://repo.maven.apache.org/maven2
