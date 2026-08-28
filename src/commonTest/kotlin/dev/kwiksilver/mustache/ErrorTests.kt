@@ -85,6 +85,7 @@ class ParseWithErrorReportTests : FunSpec({
 })
 
 class MalformedDelimiterChangeTests : FunSpec({
+    // TODO consider whether throwing an exception is the right way to handle this problem.
     test("delimiter change missing trailing equals throws") {
         val exception = shouldThrow<IllegalArgumentException> {
             Mustache.parseWithErrorReport("{{=<% %>}}")
