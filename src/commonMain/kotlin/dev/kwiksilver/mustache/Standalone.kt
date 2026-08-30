@@ -1,5 +1,17 @@
 package dev.kwiksilver.mustache
 
+/**
+ * Handles cleanup for Standalone fragments, meaning tag-fragments that other than themselves only have whitespace
+ * on the source line and are defined as being able to stand alone.
+ * In this case the whitespace for this line is stripped from the preceding and following text fragments so that
+ * the entire line containing this tag is stripped from the output.
+ *
+ * This allows whitespace on lines that only contain comments, delimiter-changes, and section start/end tags without
+ * affecting the rendered output.
+ *
+ * For [PartialFragment]s the stripped indentation is saved back in the [PartialFragment] itself, so that is can
+ * be rendered with the appropriate indentation.
+ */
 internal fun List<Fragment>.cleanStandaloneFragmentLines(): List<Fragment> {
     val updatedFragments = this.toMutableList()
     for (index in updatedFragments.indices) {
@@ -22,6 +34,9 @@ internal fun List<Fragment>.cleanStandaloneFragmentLines(): List<Fragment> {
     return updatedFragments
 }
 
+/**
+ * Checks whether the last line in the [TextFragment] at the given [index] only contains whitespace.
+ */
 private fun List<Fragment>.endsWithWhitespaceAfterNewline(index: Int): Boolean {
     if (!indices.contains(index)) {
         return true
@@ -40,6 +55,9 @@ private fun List<Fragment>.endsWithWhitespaceAfterNewline(index: Int): Boolean {
     return textContent.substring(lastLinebreakIndex + 1).all { it.isWhitespace() }
 }
 
+/**
+ * Checks whether the first line in the [TextFragment] at the given [index] only contains whitespace.
+ */
 private fun List<Fragment>.startsWithWhitespaceBeforeNewline(index: Int): Boolean {
     if (!indices.contains(index)) {
         return true
@@ -60,6 +78,10 @@ private fun List<Fragment>.startsWithWhitespaceBeforeNewline(index: Int): Boolea
     return textContent.substring(0, firstLinebreakIndex).all { it.isWhitespace() }
 }
 
+/**
+ * Removes the characters after the last linebreak in the [TextFragment] at the given [index].
+ * This is only used to remove whitespace.
+ */
 private fun MutableList<Fragment>.removeCharsAfterLastLinebreak(index: Int): String {
     if (!indices.contains(index)) {
         return ""
@@ -80,6 +102,10 @@ private fun MutableList<Fragment>.removeCharsAfterLastLinebreak(index: Int): Str
     return ""
 }
 
+/**
+ * Removes the characters up to and including the first linebreak in the [TextFragment] at the given [index].
+ * This is only used to remove whitespace.
+ */
 private fun MutableList<Fragment>.removeCharsUptoAndIncludingFirstLinebreak(index: Int) {
     if (!indices.contains(index)) {
         return

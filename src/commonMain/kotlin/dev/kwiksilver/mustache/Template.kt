@@ -8,6 +8,8 @@ import kotlinx.serialization.json.*
  * to produce the output.
  */
 class Template internal constructor(internal val fragments: List<Fragment>) {
+    // TODO Consider removing known non-rendering fragments (like comment) from the list
+    //      for further optimization, and keeping errors in a separate internal list.
 
     /**
      * Renders the [Template], using the data contained in the [context] to fill in the variable
@@ -147,7 +149,7 @@ internal class SectionEndFragment(val valuePath: ValuePath, position: Int) : Emp
  * Represents the [contents] of a section. The [contents] of the section are representented as a list of [Fragment]s.
  * The [valuePath] represents the key path in the context-data for rendering the section.
  */
-internal class SectionFragment internal constructor(private val valuePath: ValuePath, private val contents: List<Fragment>, override val position: Int) : CanStandAloneFragment {
+internal class SectionFragment internal constructor(private val valuePath: ValuePath, private val contents: List<Fragment>, override val position: Int) : Fragment {
     override fun render(context: Context, partials: Map<String, Template>): String {
         val targetValue = context.resolvePath(valuePath)
 
@@ -180,7 +182,7 @@ internal class InvertedSectionStartFragment(val valuePath: ValuePath, position: 
  * Represents the [contents] of an inverted section. The [contents] of the section are representented as a list of [Fragment]s.
  * The [valuePath] represents the key path in the context-data for rendering the inverted section.
  */
-internal class InvertedSectionFragment internal constructor(private val valuePath: ValuePath, private val contents: List<Fragment>, override val position: Int) : CanStandAloneFragment {
+internal class InvertedSectionFragment internal constructor(private val valuePath: ValuePath, private val contents: List<Fragment>, override val position: Int) : Fragment {
     override fun render(context: Context, partials: Map<String, Template>): String {
         val targetValue = context.resolvePath(valuePath)
 

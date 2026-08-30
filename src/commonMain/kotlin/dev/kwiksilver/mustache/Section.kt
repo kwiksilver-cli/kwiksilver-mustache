@@ -1,5 +1,10 @@
 package dev.kwiksilver.mustache
 
+/**
+ * Transforms a simple list of fragments with section (and inverted-section) start and end fragments into one with
+ * structured sections and inverted-sections. Each matched pair of section start/end fragments is rebuilt into
+ * a [SectionFragment] or [InvertedSectionFragment] that contains the fragments in-between the matched pair.
+ */
 internal fun List<Fragment>.constructSections(): List<Fragment> {
     val updatedFragments = mutableListOf<Fragment>()
     val sectionStack = mutableListOf<SectionBuilder>()
@@ -44,6 +49,9 @@ internal fun List<Fragment>.constructSections(): List<Fragment> {
     return updatedFragments
 }
 
+/**
+ * Helper class to manage data for the [constructSections] function.
+ */
 private class SectionBuilder(val valuePath: ValuePath, val position: Int, val inverted: Boolean = false) {
     val fragments = mutableListOf<Fragment>()
 

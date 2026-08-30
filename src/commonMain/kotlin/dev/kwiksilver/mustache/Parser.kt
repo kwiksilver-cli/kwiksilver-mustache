@@ -1,5 +1,12 @@
 package dev.kwiksilver.mustache
 
+/**
+ * A simple parser for the [template], which linearly scans for the current delimiter sequences as well
+ * as the triple-mustache delimiter that cannot be modified.
+ *
+ * It internally uses a mutable list of fragments that were gathered so far, and the current position indicating
+ * how far the source [template] has been processed.
+ */
 internal fun parseTemplate(template: String): Template {
     var openDelimiter = "{{"
     var closeDelimiter = "}}"
@@ -14,7 +21,12 @@ internal fun parseTemplate(template: String): Template {
         val tripleOpenPos = template.indexOf("{{{", position)
 
         if (tripleOpenPos != -1 && tripleOpenPos <= openPos && openPos != -1) {
+            // Handle the triple-mustache interpolation.
+
+            // TODO add test where triple item is last, or triple comes after delimiter change
+
             if (tripleOpenPos > position) {
+                // Add any text found before the triple mustache opening
                 val fragmentLineStarts = lineStartIndices.filter { it in position..tripleOpenPos }.map { it - position }
                 fragments.add(TextFragment(template.substring(position, tripleOpenPos), fragmentLineStarts, position))
             }
@@ -23,36 +35,49 @@ internal fun parseTemplate(template: String): Template {
         }
 
         if (openPos == -1) {
+            // No more opening delimiters found. Wrap up the last bit of text and finish the parsing loop.
+
             val fragmentLineStarts = lineStartIndices.filter { it in position..template.length }.map { it - position }
             fragments.add(TextFragment(template.substring(position), fragmentLineStarts, position))
             break
         }
 
         if (openPos > position) {
+            // Add the text between the old position and the next opening delimiter.
+
             val fragmentLineStarts = lineStartIndices.filter { it in position..openPos }.map { it - position }
             fragments.add(TextFragment(template.substring(position, openPos), fragmentLineStarts, position))
         }
 
         val closePos = template.indexOf(closeDelimiter, openPos + openDelimiter.length)
         if (closePos == -1) {
+            // No close delimiter found for the current opening delimiter. Wrap up with an error fragment and finish.
+
             fragments.add(ErrorFragment("Open delimiter without closing delimiter", openPos))
             break
         }
 
         position = closePos + closeDelimiter.length
 
+        // Build a new fragment based on the tag type.
         val actionFragment = buildActionFragment(template.substring(openPos + openDelimiter.length, closePos), openPos)
         fragments.add(actionFragment)
 
         if (actionFragment is DelimiterChangeFragment) {
+            // Change the delimiters for parsing.
+
             openDelimiter = actionFragment.openDelimiter
             closeDelimiter = actionFragment.closeDelimiter
         }
     }
 
+    // Clean up and restructure the simple list of fragments before wrapping it a Template instance.
     return Template(fragments.cleanStandaloneFragmentLines().constructSections())
 }
 
+/**
+ * Builds different fragments based on the first character of the tag contents.
+ */
 private fun buildActionFragment(actionText: String, position: Int): Fragment {
     return when {
         actionText.startsWith('!') -> CommentFragment(position)
@@ -81,6 +106,9 @@ private fun parseTripleMustache(template: String, tripleOpenPos: Int, fragments:
     return tripleClosePos + 3
 }
 
+/**
+ * Find the indices where a new line starts in the text.
+ */
 internal fun CharSequence.findAllLineStartIndices(): List<Int> {
     val lineStarts = mutableListOf<Int>()
 

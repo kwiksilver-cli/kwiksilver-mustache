@@ -1,5 +1,9 @@
 package dev.kwiksilver.mustache
 
+/**
+ * Maps the errors in a parsed [Template] to a [Position] in the [templateText] and
+ * transform that into error messages that include that position indication.
+ */
 internal fun Template.generateErrors(templateText: String): List<String> {
     val errorFragments = this.fragments.filterIsInstance<ErrorFragment>()
     return errorFragments.map { errorFragment ->
@@ -8,8 +12,14 @@ internal fun Template.generateErrors(templateText: String): List<String> {
     }
 }
 
+/**
+ * Indicates a positions by [line] and [column] in the template source text.
+ */
 internal data class Position(val line: Int, val column: Int) {
     companion object {
+        /**
+         * Transforms an offset [position] in the [source] text into a [line] and [column] [Position].
+         */
         fun fromOffset(position: Int, source: String): Position {
             val newlinePositions = source.withIndex().filter{it.value == '\n'}.map{it.index}
 
