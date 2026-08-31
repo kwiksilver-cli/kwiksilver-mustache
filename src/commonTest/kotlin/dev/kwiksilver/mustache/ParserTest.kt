@@ -18,4 +18,27 @@ class ParserTests : FunSpec({
         Position.fromOffset(8, "first\r\nsecond") shouldBe Position(2, 2)
         Position.fromOffset(6, "first\n") shouldBe Position(2, 1)
     }
+
+    test("Change delimiter followed by triple") {
+        val fragments = parseTemplate("""Hello{{=<% %>=}}, (<%text%>){{{point}}}""").fragments
+        fragments shouldBe arrayListOf(
+            TextFragment("Hello", listOf(0), 0),
+            DelimiterChangeFragment("<%", "%>", 5),
+            TextFragment(", (", listOf(), 16),
+            InterpolationFragment(listOf("text"), 19, true),
+            TextFragment(")", listOf(), 27),
+            InterpolationFragment(listOf("point"), 28, false)
+        )
+
+        val fragments2 = parseTemplate("""Hello{{=<% %>=}},{{{space}}}(<%text%>)!""").fragments
+        fragments2 shouldBe arrayListOf(
+            TextFragment("Hello", listOf(0), 0),
+            DelimiterChangeFragment("<%", "%>", 5),
+            TextFragment(",", listOf(), 16),
+            InterpolationFragment(listOf("space"), 17, false),
+            TextFragment("(", listOf(), 28),
+            InterpolationFragment(listOf("text"), 29, true),
+            TextFragment(")!", listOf(), 37)
+        )
+    }
 })

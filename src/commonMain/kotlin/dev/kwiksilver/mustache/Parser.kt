@@ -20,7 +20,7 @@ internal fun parseTemplate(template: String): Template {
         val openPos = template.indexOf(openDelimiter, position)
         val tripleOpenPos = template.indexOf("{{{", position)
 
-        if (tripleOpenPos != -1 && tripleOpenPos <= openPos && openPos != -1) {
+        if (tripleOpenPos != -1 && (tripleOpenPos <= openPos || openPos == -1)) {
             // Handle the triple-mustache interpolation.
 
             // TODO add test where triple item is last, or triple comes after delimiter change

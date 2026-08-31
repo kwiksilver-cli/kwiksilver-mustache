@@ -64,7 +64,7 @@ internal abstract class EmptyFragment(override val position: Int) : Fragment {
  * when rendering partials to indent the partial into the calling template based on the indentation
  * of the partial tag in the calling template.
  */
-internal class TextFragment(val text: String, val lineStartPositions: List<Int>, override val position: Int) : Fragment {
+internal data class TextFragment(val text: String, val lineStartPositions: List<Int>, override val position: Int) : Fragment {
     override fun render(context: Context, partials: Map<String, Template>): String {
         if (context.indentation.isEmpty() || lineStartPositions.isEmpty()) {
             return text
@@ -85,12 +85,12 @@ internal class TextFragment(val text: String, val lineStartPositions: List<Int>,
 /**
  * A [CommentFragment] represents a comment section in the source template. It is not rendered.
  */
-internal class CommentFragment(position: Int) : EmptyFragment(position), CanStandAloneFragment
+internal data class CommentFragment(override val position: Int) : EmptyFragment(position), CanStandAloneFragment
 
 /**
  * A [DelimiterChangeFragment] changes the delimiters used for parsing the remainder of the source template.
  */
-internal class DelimiterChangeFragment(val openDelimiter: String, val closeDelimiter: String, position: Int) : EmptyFragment(position), CanStandAloneFragment {
+internal data class DelimiterChangeFragment(val openDelimiter: String, val closeDelimiter: String, override val position: Int) : EmptyFragment(position), CanStandAloneFragment {
     companion object {
         operator fun invoke(actionText: String, position: Int): DelimiterChangeFragment {
             require(actionText.startsWith('=')) { "Delimiter set action must start with '='" }
@@ -107,14 +107,14 @@ internal class DelimiterChangeFragment(val openDelimiter: String, val closeDelim
  * An [ErrorFragment] is generated when there is a parsing failure.
  * It carries an error message and an offset [position] in the template source where the error occurred.
  */
-internal class ErrorFragment(val message: String, position: Int) : EmptyFragment(position)
+internal data class ErrorFragment(val message: String, override val position: Int) : EmptyFragment(position)
 
 /**
  * An [InterpolationFragment] represents a variable tag in the template. When rendering that tag is replaced
  * by the value in the supplied data pointed to by the [valuePath]. The [escapeHtml] flag tracks whether
  * html-relevant characters in the inserted value should be escaped during rendering.
  */
-internal class InterpolationFragment(private val valuePath: ValuePath, override val position: Int, private val escapeHtml: Boolean = false) : Fragment {
+internal data class InterpolationFragment(private val valuePath: ValuePath, override val position: Int, private val escapeHtml: Boolean = false) : Fragment {
     override fun render(context: Context, partials: Map<String, Template>): String = context.resolvePath(valuePath).renderValue()
 
     private fun JsonElement?.renderValue(): String = when (this) {
@@ -137,19 +137,19 @@ internal class InterpolationFragment(private val valuePath: ValuePath, override 
  * Indicates the start of a section.
  * The [valuePath] represents the key path in the context-data for rendering the section.
  */
-internal class SectionStartFragment(val valuePath: ValuePath, position: Int) : EmptyFragment(position), CanStandAloneFragment
+internal data class SectionStartFragment(val valuePath: ValuePath, override val position: Int) : EmptyFragment(position), CanStandAloneFragment
 
 /**
  * Indicates the end of a section.
  * The [valuePath] represents the key path in the context-data for rendering the section.
  */
-internal class SectionEndFragment(val valuePath: ValuePath, position: Int) : EmptyFragment(position), CanStandAloneFragment
+internal data class SectionEndFragment(val valuePath: ValuePath, override val position: Int) : EmptyFragment(position), CanStandAloneFragment
 
 /**
  * Represents the [contents] of a section. The [contents] of the section are representented as a list of [Fragment]s.
  * The [valuePath] represents the key path in the context-data for rendering the section.
  */
-internal class SectionFragment internal constructor(private val valuePath: ValuePath, private val contents: List<Fragment>, override val position: Int) : Fragment {
+internal data class SectionFragment(private val valuePath: ValuePath, private val contents: List<Fragment>, override val position: Int) : Fragment {
     override fun render(context: Context, partials: Map<String, Template>): String {
         val targetValue = context.resolvePath(valuePath)
 
@@ -176,13 +176,13 @@ internal class SectionFragment internal constructor(private val valuePath: Value
  * Indicates the start of a section.
  * The [valuePath] represents the key path in the context-data for rendering the section.
  */
-internal class InvertedSectionStartFragment(val valuePath: ValuePath, position: Int) : EmptyFragment(position), CanStandAloneFragment
+internal data class InvertedSectionStartFragment(val valuePath: ValuePath, override val position: Int) : EmptyFragment(position), CanStandAloneFragment
 
 /**
  * Represents the [contents] of an inverted section. The [contents] of the section are representented as a list of [Fragment]s.
  * The [valuePath] represents the key path in the context-data for rendering the inverted section.
  */
-internal class InvertedSectionFragment internal constructor(private val valuePath: ValuePath, private val contents: List<Fragment>, override val position: Int) : Fragment {
+internal data class InvertedSectionFragment(private val valuePath: ValuePath, private val contents: List<Fragment>, override val position: Int) : Fragment {
     override fun render(context: Context, partials: Map<String, Template>): String {
         val targetValue = context.resolvePath(valuePath)
 
@@ -199,7 +199,7 @@ internal class InvertedSectionFragment internal constructor(private val valuePat
  *  when rendered the included template will be additionally indented by the [indentation] of this tag in the source
  *  template.
  */
-internal class PartialFragment(val name: String, private val indentation: String, override val position: Int) : CanStandAloneFragment {
+internal data class PartialFragment(val name: String, private val indentation: String, override val position: Int) : CanStandAloneFragment {
     override fun render(context: Context, partials: Map<String, Template>): String =
         partials[name]?.render(context.withAddedIndentation(indentation), partials) ?: ""
 }
