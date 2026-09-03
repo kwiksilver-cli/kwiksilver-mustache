@@ -42,22 +42,26 @@ val jsonParser = Json {
     ignoreUnknownKeys = true
 }
 
+expect val specTestsEnabled: Boolean
+
 class MustacheSpecTests : FunSpec({
 
     context("Mustache specification tests") {
-        val specsDir = FileSystem.SYSTEM.canonicalize("mustache-specs".toPath())
-        val testSuites = FileSystem.SYSTEM.list(specsDir)
-            .filter { it.name.endsWith(".json") && !it.name.startsWith('~') }
-            .map { specPath ->
-                val specJson = FileSystem.SYSTEM.source(specPath).buffer().readUtf8()
-                val suite = jsonParser.decodeFromString<MustacheSuite>(specJson)
-                suite.copy(name = specPath.name.removeSuffix(".json"))
-            }
+        if (specTestsEnabled) {
+            val specsDir = FileSystem.SYSTEM.canonicalize("mustache-specs".toPath())
+            val testSuites = FileSystem.SYSTEM.list(specsDir)
+                .filter { it.name.endsWith(".json") && !it.name.startsWith('~') }
+                .map { specPath ->
+                    val specJson = FileSystem.SYSTEM.source(specPath).buffer().readUtf8()
+                    val suite = jsonParser.decodeFromString<MustacheSuite>(specJson)
+                    suite.copy(name = specPath.name.removeSuffix(".json"))
+                }
 
-        withContexts(testSuites) { testSuite ->
-            withTests(testSuite.tests) { specTest ->
-                withClue(specTest.desc) {
-                    Mustache.process(specTest.template, specTest.data, specTest.partials) shouldBe specTest.expected
+            withContexts(testSuites) { testSuite ->
+                withTests(testSuite.tests) { specTest ->
+                    withClue(specTest.desc) {
+                        Mustache.process(specTest.template, specTest.data, specTest.partials) shouldBe specTest.expected
+                    }
                 }
             }
         }
