@@ -4,4 +4,5 @@ build/
 .idea
 
 .kotlin
-local.properties
+/local.properties
+/creds.properties
