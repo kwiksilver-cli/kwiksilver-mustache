@@ -41,4 +41,8 @@ internal data class Position(val line: Int, val column: Int) {
             return Position(passedNewlineCount + 1, position - lastNewlinePosition)
         }
     }
+
+    override fun toString(): String {
+        return "line: $line, column: $column"
+    }
 }

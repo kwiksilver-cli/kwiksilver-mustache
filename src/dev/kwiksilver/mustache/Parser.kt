@@ -79,7 +79,7 @@ internal fun parseTemplate(template: String): Template {
 private fun buildActionFragment(actionText: String, position: Int): Fragment {
     return when {
         actionText.startsWith('!') -> CommentFragment(position)
-        actionText.startsWith('=') -> DelimiterChangeFragment(actionText, position)
+        actionText.startsWith('=') -> parseDelimiterChange(actionText, position)
         actionText.startsWith('#') -> SectionStartFragment(parseValuePath(actionText.substring(1)), position)
         actionText.startsWith('/') -> SectionEndFragment(parseValuePath(actionText.substring(1)), position)
         actionText.startsWith('^') -> InvertedSectionStartFragment(parseValuePath(actionText.substring(1)), position)
@@ -102,6 +102,20 @@ private fun parseTripleMustache(template: String, tripleOpenPos: Int, fragments:
     fragments.add(InterpolationFragment(parseValuePath(template.substring(tripleOpenPos + 3, tripleClosePos)), tripleOpenPos))
 
     return tripleClosePos + 3
+}
+
+private fun parseDelimiterChange(actionText: String, position: Int): Fragment {
+    if (!actionText.endsWith('=')) {
+        return ErrorFragment("Delimiter set action must end with '='", position)
+    }
+
+    val newDelimiters = actionText.subSequence(1, actionText.length - 1).trim().split("\\s+".toRegex())
+
+    if (newDelimiters.size != 2) {
+        return ErrorFragment("Delimiter set action must specify exactly 2 delimiters", position)
+    }
+
+    return DelimiterChangeFragment(newDelimiters[0], newDelimiters[1], position)
 }
 
 /**

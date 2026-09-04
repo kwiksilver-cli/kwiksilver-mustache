@@ -90,18 +90,7 @@ internal data class CommentFragment(override val position: Int) : EmptyFragment(
 /**
  * A [DelimiterChangeFragment] changes the delimiters used for parsing the remainder of the source template.
  */
-internal data class DelimiterChangeFragment(val openDelimiter: String, val closeDelimiter: String, override val position: Int) : EmptyFragment(position), CanStandAloneFragment {
-    companion object {
-        operator fun invoke(actionText: String, position: Int): DelimiterChangeFragment {
-            require(actionText.startsWith('=')) { "Delimiter set action must start with '='" }
-            require(actionText.endsWith('=')) { "Delimiter set action must end with '='" }
-
-            val newDelimiters = actionText.subSequence(1, actionText.length - 1).trim().split("\\s+".toRegex())
-            require(newDelimiters.size == 2) { "Delimiter set action must specify exactly 2 delimiters" }
-            return DelimiterChangeFragment(newDelimiters[0], newDelimiters[1], position)
-        }
-    }
-}
+internal data class DelimiterChangeFragment(val openDelimiter: String, val closeDelimiter: String, override val position: Int) : EmptyFragment(position), CanStandAloneFragment
 
 /**
  * An [ErrorFragment] is generated when there is a parsing failure.
@@ -208,7 +197,9 @@ internal data class PartialFragment(val name: String, private val indentation: S
  * Decides whether a context [targetValue] evaluates to true for the purposes of including or omitting a [SectionFragment]
  * or an [InvertedSectionFragment] in the rendered output.
  */
-private fun isTruthy(targetValue: JsonElement) = !(
+private fun isTruthy(targetValue: JsonElement) =
+    // The implementation is inverting an 'isFalsy' check because false is clearly defined and true is anything else
+    !(
         targetValue == JsonPrimitive(false) ||
         targetValue == JsonNull ||
-        targetValue is JsonArray && targetValue.size == 0)
+        targetValue is JsonArray && targetValue.isEmpty())
